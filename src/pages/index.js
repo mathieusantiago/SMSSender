@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 export default function Home({ serializedPosts }) {
   const [message, setMessage] = useState("");
   const [phone, setPhone] = useState("");
-  const [res, setRes] = useState("rien");
+  const [res, setRes] = useState("");
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const options = {
@@ -18,7 +18,7 @@ export default function Home({ serializedPosts }) {
   };
   const handleSubmitMessage = async (e) => {
     e.preventDefault();
-    axios({
+    await axios({
       method: "POST",
       url: "http://localhost:3000/api/sendCall",
       data: {
@@ -65,7 +65,7 @@ export default function Home({ serializedPosts }) {
           <button type="submit" className="btn btn-primary mt-3">
             Send Message
           </button>
-          {res !== "rien" ? <p>{res}</p> : ""}
+          {res !== "" ? <p>{res}</p> : ""}
         </form>
         {serializedPosts.map((post) => (
           <div key={post.uri}>

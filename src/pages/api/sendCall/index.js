@@ -1,30 +1,28 @@
-const fs = require('fs');
+const fs = require("fs");
 
 export default function handler(req, res) {
-  console.log("req", req.body);
   if (!req.body.phone) {
-    res.status(201).json({ text: "SMS no send no phone number" });
+    return res.status(201).json({ text: "SMS no send no phone number" });
   }
 
   if (!req.body.message) {
-    res.status(401).json({ text: "SMS no send no message empty" });
+    return res.status(401).json({ text: "SMS no send no message empty" });
   }
   const registerMessage = async (message) => {
-    const messagesData = fs.readFileSync('messages.json');
+    const messagesData = fs.readFileSync("messages.json");
 
-    // Parsing des données JSON existantes
     const messages = JSON.parse(messagesData);
-    
-    // Ajout du nouvel objet JSON à la fin du tableau
-    const newMessage = message
+
+    const newMessage = message;
     messages.push(newMessage);
-    
-    // Écriture des données mises à jour dans le fichier JSON
-    fs.writeFile('messages.json', JSON.stringify(messages), (err) => {
-      if (err) throw err;
-      console.log('Le nouveau message a été ajouté au fichier messages.json');
+
+    fs.writeFile("messages.json", JSON.stringify(messages), (err) => {
+      if (err) {
+        return err;
+      }
+      console.log("Le nouveau message a été ajouté au fichier messages.json");
     });
-  }
+  };
 
   const client = require("twilio")(
     process.env.ACCOUNTSID,
@@ -42,7 +40,6 @@ export default function handler(req, res) {
       /^(\+\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/,
       "$1 $2 $3 $4 $5"
     );
-    console.log("formatted", formatted);
     return formatted;
   };
   client.messages
@@ -52,10 +49,11 @@ export default function handler(req, res) {
       to: formatTelephone(req.body.phone),
     })
     .then((message) => {
-      registerMessage(message)
-      res.status(201).json({ text: "SMS send", message });
+      registerMessage(message);
+      return res.status(201).json({ text: "SMS send", message });
     })
     .catch((err) => {
-      res.status(401).json({ text: "SMS no send err" });
+      console.log("err", err);
+      return res.status(401).json({ text: "SMS no send err" });
     });
 }
