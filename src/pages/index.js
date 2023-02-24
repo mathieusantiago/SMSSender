@@ -1,10 +1,19 @@
 import axios from "axios";
 import { Suspense, useEffect, useState } from "react";
 
-export default function Home({ serializedPosts }) {
+export default function Home() {
   const [message, setMessage] = useState("");
   const [phone, setPhone] = useState("");
   const [res, setRes] = useState("");
+  const [data, setData] = useState(null)
+
+  useEffect(() => {
+    axios('/api/')
+      .then((data) => {
+        setData(data)
+      })
+  }, [])
+
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const options = {
@@ -16,6 +25,7 @@ export default function Home({ serializedPosts }) {
     };
     return date.toLocaleString("fr-FR", options);
   };
+
   const handleSubmitMessage = async (e) => {
     e.preventDefault();
     await axios({
@@ -38,6 +48,7 @@ export default function Home({ serializedPosts }) {
       }
     });
   };
+
   return (
     <div>
       <Suspense fallback={<div>Loading...</div>}>
@@ -67,7 +78,7 @@ export default function Home({ serializedPosts }) {
           </button>
           {res !== "" ? <p>{res}</p> : ""}
         </form>
-        {serializedPosts.map((post) => (
+        {data && data.map((post) => (
           <div key={post.uri}>
             <div className="card mt-3 bg-secondary text-light">
               <div className="card-body">
@@ -85,15 +96,3 @@ export default function Home({ serializedPosts }) {
   );
 }
 
-export const getServerSideProps = async () => {
-  const res = await axios("http://localhost:3000/api/").then((res) => {
-    return res.data;
-  });
-
-  const serializedPosts = await res ? JSON.parse(JSON.stringify(res)) : [];
-  return {
-    props: {
-      serializedPosts,
-    },
-  };
-};
